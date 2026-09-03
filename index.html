@@ -217,23 +217,10 @@
 
     .bottom-strip {
       display: grid;
-      grid-template-columns: auto auto auto auto 1fr;
+      grid-template-columns: auto auto auto auto;
       gap: 10px;
       align-items: center;
       margin-top: 10px;
-    }
-    .pct-pill {
-      min-width: 76px;
-      height: 42px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, #bcbcbc, #8b8b8b);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 20px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
     }
     .round-total {
       font-size: clamp(24px, 5vw, 34px);
@@ -351,13 +338,10 @@
 
     @media (max-width: 860px) {
       .bottom-strip {
-        grid-template-columns: auto auto 1fr;
+        grid-template-columns: auto auto auto auto;
         row-gap: 10px;
       }
       .bottom-strip .count-pill { min-width: 0; }
-      .bottom-strip .count-pill:nth-of-type(1) { grid-column: 1; }
-      .bottom-strip .count-pill:nth-of-type(2) { grid-column: 2; }
-      .bottom-strip .count-pill:nth-of-type(3) { grid-column: 3; }
       .dock-inner {
         grid-template-columns: 1fr 1fr 1fr;
       }
@@ -385,7 +369,10 @@
       .tie-badge { min-width: 14px; height: 14px; font-size: 9px; right: -2px; top: -2px; }
       .floating-top { width: 48px; height: 48px; right: 8px; top: 8px; }
       .chevrons { transform: scale(.85); }
-      .pct-pill { min-width: 66px; height: 38px; font-size: 18px; }
+      .bottom-strip {
+        grid-template-columns: auto 1fr 1fr 1fr;
+        gap: 6px;
+      }
       .round-total { font-size: 28px; min-width: 52px; }
       .count-pill { height: 38px; gap: 8px; padding: 0 10px; }
       .count-chip { width: 28px; height: 28px; font-size: 16px; }
@@ -420,7 +407,6 @@
     </section>
 
     <section class="bottom-strip" aria-label="현재 집계">
-      <div class="pct-pill" id="playerPct">0%</div>
       <div class="round-total" id="totalRounds">#0</div>
       <div class="count-pill"><span class="count-chip P">P</span><span class="count-num" id="playerCount">0</span></div>
       <div class="count-pill"><span class="count-chip B">B</span><span class="count-num" id="bankerCount">0</span></div>
@@ -446,7 +432,6 @@
     const playerCount = document.getElementById('playerCount');
     const bankerCount = document.getElementById('bankerCount');
     const tieCount = document.getElementById('tieCount');
-    const playerPct = document.getElementById('playerPct');
 
     const names = { P: 'PLAYER', B: 'BANKER', T: 'TIE' };
     const resetButtons = [document.getElementById('resetTop'), document.getElementById('resetDock')];
@@ -475,13 +460,8 @@
           col = 0;
           row = 0;
         } else if (result === lastMain) {
-          if (row < 5) {
-            row += 1;
-          } else {
-            // 한 열이 6칸을 다 쓰면 오른쪽 열에서 이어감
-            col += 1;
-            row = 5;
-          }
+          // 같은 결과가 계속되면 칸 수와 상관없이 같은 열에서 아래로 계속 쌓음
+          row += 1;
         } else {
           col += 1;
           row = 0;
@@ -503,12 +483,10 @@
       playerCount.textContent = counts.P;
       bankerCount.textContent = counts.B;
       tieCount.textContent = counts.T;
-      const decisive = counts.P + counts.B;
-      const pct = decisive ? Math.round((counts.P / decisive) * 100) : 0;
-      playerPct.textContent = `${pct}%`;
 
       if (!cells.length) {
         board.className = 'board-empty';
+        board.removeAttribute('style');
         board.innerHTML = 'PLAYER · BANKER · TIE 버튼을 눌러 시작하세요.';
         undoButtons.forEach(btn => btn.disabled = true);
         resetButtons.forEach(btn => btn.disabled = true);
@@ -521,14 +499,19 @@
 
       const cellSize = window.innerWidth <= 620 ? 36 : 44;
       const maxCol = Math.max(...cells.map(c => c.col));
+      const maxRow = Math.max(...cells.map(c => c.row));
+      const rows = Math.max(6, maxRow + 1);
       const minColumns = window.innerWidth <= 620 ? 10 : 14;
       const columns = Math.max(minColumns, maxCol + 3);
 
       board.className = 'board';
       board.innerHTML = '';
       board.style.gridTemplateColumns = `repeat(${columns}, ${cellSize}px)`;
+      board.style.gridTemplateRows = `repeat(${rows}, ${cellSize}px)`;
+      board.style.minHeight = `${rows * cellSize}px`;
+      board.style.backgroundSize = `${cellSize}px ${cellSize}px`;
 
-      for (let row = 0; row < 6; row++) {
+      for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
           const cell = document.createElement('div');
           cell.className = 'cell';
