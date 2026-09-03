@@ -2,73 +2,181 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
   <title>바카라 라운드 기록판</title>
   <style>
     * { box-sizing: border-box; }
+    html { background: #fff; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
-      background: #0b1020;
-      color: #f8fafc;
+      background: #fff;
+      color: #111;
       min-height: 100vh;
     }
-    .wrap { width: min(1100px, calc(100% - 24px)); margin: 0 auto; padding: 28px 0 40px; }
-    h1 { margin: 0 0 8px; font-size: clamp(26px, 5vw, 40px); }
-    .sub { color: #94a3b8; margin-bottom: 22px; }
-    .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .wrap {
+      width: min(1100px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 28px 0 190px;
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(26px, 5vw, 40px); letter-spacing: -.03em; }
+    .sub { color: #666; margin-bottom: 20px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 0 0 18px;
+    }
+    .stat {
+      background: #fff;
+      border: 1px solid #d9d9d9;
+      border-radius: 14px;
+      padding: 13px 8px;
+      text-align: center;
+    }
+    .stat small { display: block; color: #777; margin-bottom: 4px; font-size: 11px; }
+    .stat strong { font-size: 23px; }
+
+    .panel {
+      background: #fff;
+      border: 1px solid #d9d9d9;
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+    .panel-head h2 { margin: 0 0 2px; font-size: 18px; }
+    .panel-head span { color: #777; font-size: 13px; }
+
+    .road { display: grid; grid-template-columns: 1fr; gap: 7px; width: 100%; min-height: 86px; }
+    .empty {
+      color: #777;
+      min-height: 120px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      width: 100%;
+      border: 1px dashed #cfcfcf;
+      border-radius: 12px;
+    }
+    .round {
+      width: 100%;
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      align-items: stretch;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+    }
+    .round-num {
+      display: grid;
+      place-items: center;
+      color: #666;
+      font-size: 13px;
+      font-weight: 800;
+      border-right: 1px solid #d9d9d9;
+      background: #f5f5f5;
+    }
+    .ball {
+      width: 100%;
+      min-height: 58px;
+      display: grid;
+      place-items: center;
+      font-weight: 950;
+      font-size: 18px;
+      letter-spacing: .08em;
+    }
+    .ball.P { background: #1473e6; color: #fff; }
+    .ball.B { background: #e53935; color: #fff; }
+    .ball.T { background: #1f9d55; color: #fff; }
+
+    .bottom-actions { display: flex; gap: 8px; margin-top: 12px; }
     button {
-      border: 0; cursor: pointer; border-radius: 18px; min-height: 76px;
-      font-size: clamp(16px, 3vw, 22px); font-weight: 800; color: #fff;
-      transition: transform .1s ease, opacity .1s ease;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      transition: transform .08s ease, background .12s ease;
+      -webkit-tap-highlight-color: transparent;
     }
     button:active { transform: scale(.98); }
-    .player { background: #2563eb; }
-    .banker { background: #dc2626; }
-    .tie { background: #16a34a; }
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0; }
-    .stat { background: #131a2d; border: 1px solid #26324d; border-radius: 16px; padding: 14px; text-align: center; }
-    .stat small { display: block; color: #94a3b8; margin-bottom: 4px; }
-    .stat strong { font-size: 24px; }
-    .panel { background: #111827; border: 1px solid #26324d; border-radius: 20px; padding: 16px; }
-    .panel-head { display:flex; justify-content:space-between; gap: 12px; align-items:end; margin-bottom: 12px; }
-    .panel-head h2 { margin: 0; font-size: 18px; }
-    .panel-head span { color: #94a3b8; font-size: 14px; }
-    .road-scroll { overflow-x: auto; padding-bottom: 8px; }
-    .road { display: flex; gap: 10px; min-width: max-content; align-items: flex-start; min-height: 86px; }
-    .empty { color: #64748b; min-height: 86px; display: grid; place-items: center; text-align:center; width:100%; }
-    .round { width: 58px; flex: 0 0 58px; text-align:center; }
-    .round-num { color:#94a3b8; font-size: 12px; margin-bottom: 6px; }
-    .ball { width: 52px; height: 52px; margin: 0 auto; border-radius: 50%; display:grid; place-items:center; font-weight:900; font-size: 18px; border: 2px solid rgba(255,255,255,.18); }
-    .ball.P { background:#2563eb; }
-    .ball.B { background:#dc2626; }
-    .ball.T { background:#16a34a; }
-    .bottom { display:flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-    .secondary { flex:1; min-height: 52px; background:#1e293b; }
-    .danger { flex:1; min-height: 52px; background:#7f1d1d; }
-    .note { color:#64748b; font-size:12px; text-align:center; margin-top:16px; }
+    .mini {
+      flex: 1;
+      min-height: 48px;
+      border-radius: 12px;
+      font-weight: 800;
+      border: 1px solid #cfcfcf;
+      background: #fff;
+      color: #111;
+    }
+    .mini.reset { background: #111; color: #fff; border-color: #111; }
+
+    .note { color: #666; font-size: 12px; text-align: center; margin-top: 16px; }
+
+    /* 항상 화면 하단에 붙어 있는 입력 패널 */
+    .input-dock {
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,.96);
+      border-top: 1px solid #d9d9d9;
+      padding: 10px max(12px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .dock-inner { width: min(1100px, 100%); margin: 0 auto; }
+    .dock-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: #666;
+      font-size: 12px;
+    }
+    .dock-status strong { color: #111; font-size: 13px; }
+    .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .choice {
+      min-height: 66px;
+      border-radius: 14px;
+      font-size: clamp(14px, 3vw, 20px);
+      font-weight: 950;
+      letter-spacing: .02em;
+      border: 1px solid transparent;
+    }
+    .choice.player { background: #1473e6; color: #fff; }
+    .choice.banker { background: #e53935; color: #fff; }
+    .choice.tie { background: #1f9d55; color: #fff; }
+
     @media (max-width: 580px) {
-      .wrap { width: min(100% - 16px, 1100px); padding-top: 18px; }
-      .controls { gap: 8px; }
-      button { min-height: 64px; border-radius: 14px; }
-      .stats { gap: 6px; }
-      .stat { padding: 10px 5px; }
-      .stat strong { font-size: 20px; }
-      .panel-head { align-items:start; flex-direction:column; }
+      .wrap { width: calc(100% - 14px); padding-top: 16px; padding-bottom: 178px; }
+      h1 { font-size: 28px; }
+      .sub { font-size: 13px; }
+      .stats { gap: 5px; }
+      .stat { padding: 9px 3px; border-radius: 11px; }
+      .stat strong { font-size: 19px; }
+      .panel { padding: 10px; border-radius: 14px; }
+      .panel-head { align-items: start; flex-direction: column; gap: 4px; }
+      .round { grid-template-columns: 52px 1fr; min-height: 54px; }
+      .ball { min-height: 54px; }
+      .choice { min-height: 60px; border-radius: 12px; }
     }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <h1>바카라 라운드 기록판 🃏</h1>
-    <div class="sub">돈 없이 즐기는 오프라인 게임용 결과 기록판</div>
-
-    <section class="controls" aria-label="라운드 결과 입력">
-      <button class="player" data-result="P">PLAYER</button>
-      <button class="banker" data-result="B">BANKER</button>
-      <button class="tie" data-result="T">TIE</button>
-    </section>
+    <h1>바카라 라운드 기록판</h1>
+    <div class="sub">라운드 결과를 빠르게 기록합니다.</div>
 
     <section class="stats">
       <div class="stat"><small>ROUND</small><strong id="roundCount">0</strong></div>
@@ -81,68 +189,92 @@
       <div class="panel-head">
         <div>
           <h2>라운드 기록</h2>
-          <span>왼쪽 → 오른쪽 순서</span>
+          <span>위 → 아래 순서 · 한 줄을 꽉 채워 기록</span>
         </div>
         <span id="lastResult">아직 기록 없음</span>
       </div>
 
-      <div class="road-scroll" id="roadScroll">
-        <div class="road" id="road">
-          <div class="empty" id="empty">PLAYER / BANKER / TIE 버튼을 눌러 시작하세요.</div>
-        </div>
+      <div class="road" id="road">
+        <div class="empty">PLAYER / BANKER / TIE 버튼을 눌러 시작하세요.</div>
       </div>
 
-      <div class="bottom">
-        <button class="secondary" id="undo">↩ 마지막 기록 취소</button>
-        <button class="danger" id="reset">전체 초기화</button>
+      <div class="bottom-actions">
+        <button class="mini" id="undo" type="button">↩ 마지막 기록 취소</button>
+        <button class="mini reset" id="reset" type="button">전체 초기화</button>
       </div>
     </section>
 
-    <div class="note">친선 게임 결과 기록용 · 베팅 및 금전 기능 없음</div>
   </main>
+
+  <section class="input-dock" aria-label="라운드 결과 입력">
+    <div class="dock-inner">
+      <div class="dock-status">
+        <span>현재 <strong id="dockRound">0R</strong></span>
+        <span id="dockLast">다음 결과를 선택하세요</span>
+      </div>
+      <div class="controls">
+        <button class="choice player" data-result="P" type="button">PLAYER</button>
+        <button class="choice banker" data-result="B" type="button">BANKER</button>
+        <button class="choice tie" data-result="T" type="button">TIE</button>
+      </div>
+    </div>
+  </section>
 
   <script>
     const history = [];
     const road = document.getElementById('road');
-    const roadScroll = document.getElementById('roadScroll');
     const roundCount = document.getElementById('roundCount');
     const playerCount = document.getElementById('playerCount');
     const bankerCount = document.getElementById('bankerCount');
     const tieCount = document.getElementById('tieCount');
     const lastResult = document.getElementById('lastResult');
+    const dockRound = document.getElementById('dockRound');
+    const dockLast = document.getElementById('dockLast');
 
     const names = { P: 'PLAYER', B: 'BANKER', T: 'TIE' };
 
     function render() {
       const counts = { P: 0, B: 0, T: 0 };
       history.forEach(v => counts[v]++);
+
       roundCount.textContent = history.length;
       playerCount.textContent = counts.P;
       bankerCount.textContent = counts.B;
       tieCount.textContent = counts.T;
+      dockRound.textContent = `${history.length}R`;
       road.innerHTML = '';
 
       if (!history.length) {
-        road.innerHTML = '<div class="empty" id="empty">PLAYER / BANKER / TIE 버튼을 눌러 시작하세요.</div>';
+        road.innerHTML = '<div class="empty">PLAYER / BANKER / TIE 버튼을 눌러 시작하세요.</div>';
         lastResult.textContent = '아직 기록 없음';
+        dockLast.textContent = '다음 결과를 선택하세요';
         return;
       }
 
       history.forEach((value, index) => {
         const item = document.createElement('div');
         item.className = 'round';
-        item.innerHTML = `<div class="round-num">${index + 1}R</div><div class="ball ${value}">${value}</div>`;
+        item.innerHTML = `<div class="round-num">${index + 1}R</div><div class="ball ${value}">${names[value]}</div>`;
         road.appendChild(item);
       });
-      lastResult.textContent = `${history.length}R · ${names[history.at(-1)]}`;
+
+      const last = history.at(-1);
+      lastResult.textContent = `${history.length}R · ${names[last]}`;
+      dockLast.textContent = `최근: ${names[last]}`;
+    }
+
+    function addResult(value) {
+      if (!names[value]) return;
+      history.push(value);
+      render();
+      requestAnimationFrame(() => {
+        const lastRow = road.lastElementChild;
+        if (lastRow) lastRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
     }
 
     document.querySelectorAll('[data-result]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        history.push(btn.dataset.result);
-        render();
-        roadScroll.scrollLeft = roadScroll.scrollWidth;
-      });
+      btn.addEventListener('click', () => addResult(btn.dataset.result));
     });
 
     document.getElementById('undo').addEventListener('click', () => {
@@ -151,13 +283,37 @@
       render();
     });
 
-    document.getElementById('reset').addEventListener('click', () => {
-      if (!history.length) return;
-      if (confirm('모든 라운드 기록을 초기화할까요?')) {
-        history.length = 0;
-        render();
+    const resetBtn = document.getElementById('reset');
+    let resetArmed = false;
+    let resetTimer = null;
+
+    resetBtn.addEventListener('click', () => {
+      if (!history.length) {
+        resetArmed = false;
+        resetBtn.textContent = '전체 초기화';
+        return;
       }
+
+      if (!resetArmed) {
+        resetArmed = true;
+        resetBtn.textContent = '한 번 더 누르면 초기화';
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+          resetArmed = false;
+          resetBtn.textContent = '전체 초기화';
+        }, 3000);
+        return;
+      }
+
+      clearTimeout(resetTimer);
+      history.splice(0, history.length);
+      resetArmed = false;
+      resetBtn.textContent = '전체 초기화';
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+
+    render();
   </script>
 </body>
 </html>
