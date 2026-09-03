@@ -55,45 +55,56 @@
     .panel-head h2 { margin: 0 0 2px; font-size: 18px; }
     .panel-head span { color: #777; font-size: 13px; }
 
-    .road { display: grid; grid-template-columns: 1fr; gap: 7px; width: 100%; min-height: 86px; }
+    .road {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      width: 100%;
+      min-height: 86px;
+      border-top: 1px solid #d9d9d9;
+      border-left: 1px solid #d9d9d9;
+      background: #fff;
+    }
     .empty {
+      grid-column: 1 / -1;
       color: #777;
       min-height: 120px;
       display: grid;
       place-items: center;
       text-align: center;
       width: 100%;
-      border: 1px dashed #cfcfcf;
-      border-radius: 12px;
+      border-right: 1px solid #d9d9d9;
+      border-bottom: 1px solid #d9d9d9;
     }
     .round {
-      width: 100%;
-      min-height: 58px;
-      display: grid;
-      grid-template-columns: 64px 1fr;
-      align-items: stretch;
-      overflow: hidden;
-      border-radius: 12px;
-      border: 1px solid #d9d9d9;
-      background: #fff;
-    }
-    .round-num {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      min-width: 0;
       display: grid;
       place-items: center;
-      color: #666;
-      font-size: 13px;
-      font-weight: 800;
       border-right: 1px solid #d9d9d9;
-      background: #f5f5f5;
+      border-bottom: 1px solid #d9d9d9;
+      background: #fff;
+      overflow: hidden;
+    }
+    .round-num {
+      position: absolute;
+      top: 4px;
+      left: 5px;
+      color: #8a8a8a;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1;
     }
     .ball {
-      width: 100%;
-      min-height: 58px;
+      width: 68%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
       display: grid;
       place-items: center;
       font-weight: 950;
-      font-size: 18px;
-      letter-spacing: .08em;
+      font-size: clamp(13px, 2.2vw, 18px);
+      line-height: 1;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.28);
     }
     .ball.P { background: #1473e6; color: #fff; }
     .ball.B { background: #e53935; color: #fff; }
@@ -167,8 +178,9 @@
       .stat strong { font-size: 19px; }
       .panel { padding: 10px; border-radius: 14px; }
       .panel-head { align-items: start; flex-direction: column; gap: 4px; }
-      .round { grid-template-columns: 52px 1fr; min-height: 54px; }
-      .ball { min-height: 54px; }
+      .road { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .round-num { top: 3px; left: 4px; font-size: 8px; }
+      .ball { width: 66%; font-size: 14px; }
       .choice { min-height: 60px; border-radius: 12px; }
     }
   </style>
@@ -189,7 +201,7 @@
       <div class="panel-head">
         <div>
           <h2>라운드 기록</h2>
-          <span>위 → 아래 순서 · 한 줄을 꽉 채워 기록</span>
+          <span>왼쪽 → 오른쪽 순서 · 한 줄이 차면 아래로 이동</span>
         </div>
         <span id="lastResult">아직 기록 없음</span>
       </div>
@@ -254,7 +266,7 @@
       history.forEach((value, index) => {
         const item = document.createElement('div');
         item.className = 'round';
-        item.innerHTML = `<div class="round-num">${index + 1}R</div><div class="ball ${value}">${names[value]}</div>`;
+        item.innerHTML = `<div class="round-num">${index + 1}</div><div class="ball ${value}">${value}</div>`;
         road.appendChild(item);
       });
 
