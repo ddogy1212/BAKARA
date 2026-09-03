@@ -4,328 +4,618 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>바카라 라운드 기록판</title>
+  <title>바카라 기록판</title>
   <style>
+    :root {
+      --bg: #ffffff;
+      --text: #141414;
+      --muted: #747474;
+      --line: #d7d7d7;
+      --panel: #f7f7f7;
+      --shadow: 0 8px 24px rgba(0,0,0,.08);
+      --blue: #4d85ea;
+      --red: #df4a42;
+      --green: #27a05d;
+    }
+
     * { box-sizing: border-box; }
-    html { background: #fff; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
-      background: #fff;
-      color: #111;
-      min-height: 100vh;
-    }
-    .wrap {
-      width: min(1100px, calc(100% - 24px));
+    html, body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
+    body { min-height: 100vh; }
+
+    .app {
+      width: min(980px, calc(100% - 16px));
       margin: 0 auto;
-      padding: 28px 0 190px;
+      padding: 12px 0 calc(170px + env(safe-area-inset-bottom));
     }
-    h1 { margin: 0 0 8px; font-size: clamp(26px, 5vw, 40px); letter-spacing: -.03em; }
-    .sub { color: #666; margin-bottom: 20px; }
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin: 0 0 18px;
-    }
-    .stat {
-      background: #fff;
-      border: 1px solid #d9d9d9;
-      border-radius: 14px;
-      padding: 13px 8px;
-      text-align: center;
-    }
-    .stat small { display: block; color: #777; margin-bottom: 4px; font-size: 11px; }
-    .stat strong { font-size: 23px; }
-
-    .panel {
-      background: #fff;
-      border: 1px solid #d9d9d9;
-      border-radius: 18px;
-      padding: 14px;
-    }
-    .panel-head {
+    .topbar {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      align-items: end;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 0 2px;
     }
-    .panel-head h2 { margin: 0 0 2px; font-size: 18px; }
-    .panel-head span { color: #777; font-size: 13px; }
-
-    .road {
-      display: grid;
-      grid-template-columns: repeat(10, minmax(0, 1fr));
-      width: 100%;
-      min-height: 86px;
-      border-top: 1px solid #d9d9d9;
-      border-left: 1px solid #d9d9d9;
-      background: #fff;
+    .title-wrap h1 {
+      margin: 0;
+      font-size: clamp(22px, 4vw, 30px);
+      letter-spacing: -0.04em;
     }
-    .empty {
-      grid-column: 1 / -1;
-      color: #777;
-      min-height: 120px;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      width: 100%;
-      border-right: 1px solid #d9d9d9;
-      border-bottom: 1px solid #d9d9d9;
+    .title-wrap p {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: var(--muted);
     }
-    .round {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      min-width: 0;
-      display: grid;
-      place-items: center;
-      border-right: 1px solid #d9d9d9;
-      border-bottom: 1px solid #d9d9d9;
-      background: #fff;
-      overflow: hidden;
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
-    .round-num {
-      position: absolute;
-      top: 4px;
-      left: 5px;
-      color: #8a8a8a;
-      font-size: 9px;
-      font-weight: 800;
-      line-height: 1;
-    }
-    .ball {
-      width: 68%;
-      aspect-ratio: 1 / 1;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-weight: 950;
-      font-size: clamp(13px, 2.2vw, 18px);
-      line-height: 1;
-      box-shadow: inset 0 0 0 2px rgba(255,255,255,.28);
-    }
-    .ball.P { background: #1473e6; color: #fff; }
-    .ball.B { background: #e53935; color: #fff; }
-    .ball.T { background: #1f9d55; color: #fff; }
-
-    .bottom-actions { display: flex; gap: 8px; margin-top: 12px; }
-    button {
-      border: 0;
-      cursor: pointer;
-      font: inherit;
-      transition: transform .08s ease, background .12s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    button:active { transform: scale(.98); }
-    .mini {
-      flex: 1;
-      min-height: 48px;
-      border-radius: 12px;
-      font-weight: 800;
+    .ghost-btn {
+      appearance: none;
       border: 1px solid #cfcfcf;
       background: #fff;
-      color: #111;
+      color: #222;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      white-space: nowrap;
     }
-    .mini.reset { background: #111; color: #fff; border-color: #111; }
+    .ghost-btn:active { transform: scale(.98); }
+    .ghost-btn.reset { background: #111; color: #fff; border-color: #111; }
 
-    .note { color: #666; font-size: 12px; text-align: center; margin-top: 16px; }
+    .board-shell {
+      position: relative;
+      border-radius: 16px;
+      background: #fafafa;
+      border: 2px solid #9f9f9f;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9), var(--shadow);
+      overflow: hidden;
+    }
 
-    /* 항상 화면 하단에 붙어 있는 입력 패널 */
-    .input-dock {
+    .board-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      background: #f4f4f4;
+    }
+
+    .board {
+      display: grid;
+      grid-template-rows: repeat(6, 44px);
+      grid-auto-flow: column;
+      grid-auto-columns: 44px;
+      min-width: 100%;
+      background-image:
+        linear-gradient(to right, var(--line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+      background-size: 44px 44px;
+      background-position: 0 0;
+      padding-right: 44px;
+      min-height: 264px;
+    }
+
+    .board-empty {
+      min-width: 100%;
+      min-height: 264px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+      background-image:
+        linear-gradient(to right, var(--line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+      background-size: 44px 44px;
+      background-position: 0 0;
+    }
+
+    .cell {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chip {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.85);
+      border: 5px solid;
+      box-shadow: 0 1px 0 rgba(255,255,255,.6), inset 0 0 0 1px rgba(255,255,255,.4);
+      position: relative;
+    }
+    .chip.P { border-color: var(--blue); }
+    .chip.B { border-color: var(--red); }
+    .chip.T { border-color: var(--green); }
+
+    .chip.tie-mark::before,
+    .chip.tie-double::before,
+    .chip.tie-double::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 5px;
+      height: 38px;
+      background: var(--green);
+      border-radius: 99px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .chip.tie-mark::before,
+    .chip.tie-double::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    .chip.tie-double::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    .tie-badge {
+      position: absolute;
+      right: -2px;
+      top: -4px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 3px;
+      border-radius: 999px;
+      background: var(--green);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      line-height: 1;
+      box-shadow: 0 1px 3px rgba(0,0,0,.18);
+    }
+
+    .floating-top {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      width: 58px;
+      height: 58px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 4px 18px rgba(0,0,0,.12);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      z-index: 3;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .floating-top:active { transform: scale(.98); }
+    .chevrons {
+      position: relative;
+      width: 26px;
+      height: 26px;
+    }
+    .chevrons::before,
+    .chevrons::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      border-left: 3px solid #666;
+      border-top: 3px solid #666;
+      transform: rotate(45deg);
+    }
+    .chevrons::before { top: 8px; }
+    .chevrons::after { top: -2px; }
+
+    .bottom-strip {
+      display: grid;
+      grid-template-columns: auto auto auto auto 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .pct-pill {
+      min-width: 76px;
+      height: 42px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #bcbcbc, #8b8b8b);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+    }
+    .round-total {
+      font-size: clamp(24px, 5vw, 34px);
+      font-weight: 950;
+      letter-spacing: -.04em;
+      min-width: 74px;
+      text-align: center;
+    }
+    .count-pill {
+      height: 42px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #e1e1e1;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      white-space: nowrap;
+    }
+    .count-chip {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+    }
+    .count-chip.P { background: var(--blue); }
+    .count-chip.B { background: var(--red); }
+    .count-chip.T { background: var(--green); }
+    .count-num {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -.03em;
+      min-width: 14px;
+    }
+
+    .dock {
       position: fixed;
-      z-index: 100;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255,255,255,.96);
+      z-index: 100;
+      background: rgba(255,255,255,.97);
       border-top: 1px solid #d9d9d9;
-      padding: 10px max(12px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 -8px 24px rgba(0,0,0,.05);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 10px max(10px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-right));
     }
-    .dock-inner { width: min(1100px, 100%); margin: 0 auto; }
-    .dock-status {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .dock-inner {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto auto;
       gap: 10px;
-      margin-bottom: 8px;
-      color: #666;
-      font-size: 12px;
+      align-items: center;
     }
-    .dock-status strong { color: #111; font-size: 13px; }
-    .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .choice {
-      min-height: 66px;
-      border-radius: 14px;
-      font-size: clamp(14px, 3vw, 20px);
-      font-weight: 950;
-      letter-spacing: .02em;
-      border: 1px solid transparent;
+    .action-btn {
+      height: 54px;
+      border: 0;
+      border-radius: 999px;
+      color: #fff;
+      font: inherit;
+      font-weight: 900;
+      font-size: 22px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 20px;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.22), 0 6px 16px rgba(0,0,0,.10);
+      letter-spacing: -.03em;
     }
-    .choice.player { background: #1473e6; color: #fff; }
-    .choice.banker { background: #e53935; color: #fff; }
-    .choice.tie { background: #1f9d55; color: #fff; }
+    .action-btn:active { transform: scale(.985); }
+    .action-btn.player { background: linear-gradient(180deg, #4f86ef, #245cc7); }
+    .action-btn.banker { background: linear-gradient(180deg, #e65f58, #c93b34); }
+    .action-btn.tie { background: linear-gradient(180deg, #38b56e, #238b55); }
 
-    @media (max-width: 580px) {
-      .wrap { width: calc(100% - 14px); padding-top: 16px; padding-bottom: 178px; }
-      h1 { font-size: 28px; }
-      .sub { font-size: 13px; }
-      .stats { gap: 5px; }
-      .stat { padding: 9px 3px; border-radius: 11px; }
-      .stat strong { font-size: 19px; }
-      .panel { padding: 10px; border-radius: 14px; }
-      .panel-head { align-items: start; flex-direction: column; gap: 4px; }
-      .road { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-      .round-num { top: 3px; left: 4px; font-size: 8px; }
-      .ball { width: 66%; font-size: 14px; }
-      .choice { min-height: 60px; border-radius: 12px; }
+    .action-mini {
+      height: 54px;
+      border-radius: 999px;
+      padding: 0 18px;
+      border: 1px solid #d1d1d1;
+      background: #fff;
+      font: inherit;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .action-mini.reset { background: #111; color: #fff; border-color: #111; }
+    .action-mini:active { transform: scale(.985); }
+
+    .gem {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.35);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+    }
+    .slash {
+      width: 18px;
+      height: 4px;
+      border-radius: 99px;
+      background: currentColor;
+      transform: rotate(-45deg);
+      margin-left: 2px;
+    }
+
+    @media (max-width: 860px) {
+      .bottom-strip {
+        grid-template-columns: auto auto 1fr;
+        row-gap: 10px;
+      }
+      .bottom-strip .count-pill { min-width: 0; }
+      .bottom-strip .count-pill:nth-of-type(1) { grid-column: 1; }
+      .bottom-strip .count-pill:nth-of-type(2) { grid-column: 2; }
+      .bottom-strip .count-pill:nth-of-type(3) { grid-column: 3; }
+      .dock-inner {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+      .action-mini { height: 46px; }
+      .action-mini.undo { grid-column: 1 / 2; }
+      .action-mini.reset { grid-column: 2 / 4; }
+    }
+
+    @media (max-width: 620px) {
+      .app { width: calc(100% - 10px); padding-top: 8px; padding-bottom: calc(196px + env(safe-area-inset-bottom)); }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; justify-content: flex-start; }
+      .ghost-btn { padding: 9px 12px; font-size: 14px; }
+      .board-shell { border-radius: 14px; }
+      .board, .board-empty {
+        grid-template-rows: repeat(6, 36px);
+        grid-auto-columns: 36px;
+        min-height: 216px;
+        background-size: 36px 36px;
+        padding-right: 36px;
+      }
+      .cell { width: 36px; height: 36px; }
+      .chip { width: 28px; height: 28px; border-width: 4px; }
+      .chip.tie-mark::before { width: 4px; height: 31px; }
+      .tie-badge { min-width: 14px; height: 14px; font-size: 9px; right: -2px; top: -2px; }
+      .floating-top { width: 48px; height: 48px; right: 8px; top: 8px; }
+      .chevrons { transform: scale(.85); }
+      .pct-pill { min-width: 66px; height: 38px; font-size: 18px; }
+      .round-total { font-size: 28px; min-width: 52px; }
+      .count-pill { height: 38px; gap: 8px; padding: 0 10px; }
+      .count-chip { width: 28px; height: 28px; font-size: 16px; }
+      .count-num { font-size: 22px; }
+      .dock-inner { gap: 8px; }
+      .action-btn { height: 50px; font-size: 18px; padding: 0 10px; }
+      .gem { width: 14px; height: 14px; }
+      .action-mini { height: 42px; font-size: 14px; padding: 0 12px; }
     }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1>바카라 라운드 기록판</h1>
-    <div class="sub">라운드 결과를 빠르게 기록합니다.</div>
-
-    <section class="stats">
-      <div class="stat"><small>ROUND</small><strong id="roundCount">0</strong></div>
-      <div class="stat"><small>PLAYER</small><strong id="playerCount">0</strong></div>
-      <div class="stat"><small>BANKER</small><strong id="bankerCount">0</strong></div>
-      <div class="stat"><small>TIE</small><strong id="tieCount">0</strong></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>라운드 기록</h2>
-          <span>왼쪽 → 오른쪽 순서 · 한 줄이 차면 아래로 이동</span>
-        </div>
-        <span id="lastResult">아직 기록 없음</span>
+  <main class="app">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>바카라 기록판</h1>
+        <p>표처럼 한눈에 보이게 자동 정렬됩니다.</p>
       </div>
-
-      <div class="road" id="road">
-        <div class="empty">PLAYER / BANKER / TIE 버튼을 눌러 시작하세요.</div>
+      <div class="top-actions">
+        <button id="undoTop" class="ghost-btn" type="button">↩ 마지막 취소</button>
+        <button id="resetTop" class="ghost-btn reset" type="button">전체 초기화</button>
       </div>
+    </div>
 
-      <div class="bottom-actions">
-        <button class="mini" id="undo" type="button">↩ 마지막 기록 취소</button>
-        <button class="mini reset" id="reset" type="button">전체 초기화</button>
+    <section class="board-shell">
+      <button id="scrollLeftTop" class="floating-top" type="button" aria-label="처음 위치로 이동">
+        <span class="chevrons" aria-hidden="true"></span>
+      </button>
+      <div id="boardWrap" class="board-scroll">
+        <div id="board"></div>
       </div>
     </section>
 
+    <section class="bottom-strip" aria-label="현재 집계">
+      <div class="pct-pill" id="playerPct">0%</div>
+      <div class="round-total" id="totalRounds">#0</div>
+      <div class="count-pill"><span class="count-chip P">P</span><span class="count-num" id="playerCount">0</span></div>
+      <div class="count-pill"><span class="count-chip B">B</span><span class="count-num" id="bankerCount">0</span></div>
+      <div class="count-pill"><span class="count-chip T">T</span><span class="count-num" id="tieCount">0</span></div>
+    </section>
   </main>
 
-  <section class="input-dock" aria-label="라운드 결과 입력">
+  <section class="dock" aria-label="결과 입력">
     <div class="dock-inner">
-      <div class="dock-status">
-        <span>현재 <strong id="dockRound">0R</strong></span>
-        <span id="dockLast">다음 결과를 선택하세요</span>
-      </div>
-      <div class="controls">
-        <button class="choice player" data-result="P" type="button">PLAYER</button>
-        <button class="choice banker" data-result="B" type="button">BANKER</button>
-        <button class="choice tie" data-result="T" type="button">TIE</button>
-      </div>
+      <button class="action-btn player" data-result="P" type="button">P</button>
+      <button class="action-btn banker" data-result="B" type="button">B</button>
+      <button class="action-btn tie" data-result="T" type="button">T</button>
+      <button id="undoDock" class="action-mini undo" type="button">↩ 취소</button>
+      <button id="resetDock" class="action-mini reset" type="button">전체 초기화</button>
     </div>
   </section>
 
   <script>
     const history = [];
-    const road = document.getElementById('road');
-    const roundCount = document.getElementById('roundCount');
+    const board = document.getElementById('board');
+    const boardWrap = document.getElementById('boardWrap');
+    const totalRounds = document.getElementById('totalRounds');
     const playerCount = document.getElementById('playerCount');
     const bankerCount = document.getElementById('bankerCount');
     const tieCount = document.getElementById('tieCount');
-    const lastResult = document.getElementById('lastResult');
-    const dockRound = document.getElementById('dockRound');
-    const dockLast = document.getElementById('dockLast');
+    const playerPct = document.getElementById('playerPct');
 
     const names = { P: 'PLAYER', B: 'BANKER', T: 'TIE' };
+    const resetButtons = [document.getElementById('resetTop'), document.getElementById('resetDock')];
+    const undoButtons = [document.getElementById('undoTop'), document.getElementById('undoDock')];
 
-    function render() {
+    function buildRoad() {
+      const cells = [];
+      let col = -1;
+      let row = 0;
+      let lastMain = null;
+
+      history.forEach((result, idx) => {
+        if (result === 'T') {
+          // TIE는 직전 P/B 칸에 겹쳐 표시. 첫 결과가 TIE면 별도 칸 사용.
+          if (cells.length) {
+            cells[cells.length - 1].ties += 1;
+          } else {
+            col = 0;
+            row = 0;
+            cells.push({ result: 'T', ties: 1, round: idx + 1, row, col, standalone: true });
+          }
+          return;
+        }
+
+        if (lastMain === null) {
+          col = 0;
+          row = 0;
+        } else if (result === lastMain) {
+          if (row < 5) {
+            row += 1;
+          } else {
+            // 한 열이 6칸을 다 쓰면 오른쪽 열에서 이어감
+            col += 1;
+            row = 5;
+          }
+        } else {
+          col += 1;
+          row = 0;
+        }
+
+        cells.push({ result, ties: 0, round: idx + 1, row, col });
+        lastMain = result;
+      });
+
+      return cells;
+    }
+
+    function renderBoard() {
       const counts = { P: 0, B: 0, T: 0 };
       history.forEach(v => counts[v]++);
+      const cells = buildRoad();
 
-      roundCount.textContent = history.length;
+      totalRounds.textContent = `#${history.length}`;
       playerCount.textContent = counts.P;
       bankerCount.textContent = counts.B;
       tieCount.textContent = counts.T;
-      dockRound.textContent = `${history.length}R`;
-      road.innerHTML = '';
+      const decisive = counts.P + counts.B;
+      const pct = decisive ? Math.round((counts.P / decisive) * 100) : 0;
+      playerPct.textContent = `${pct}%`;
 
-      if (!history.length) {
-        road.innerHTML = '<div class="empty">PLAYER / BANKER / TIE 버튼을 눌러 시작하세요.</div>';
-        lastResult.textContent = '아직 기록 없음';
-        dockLast.textContent = '다음 결과를 선택하세요';
+      if (!cells.length) {
+        board.className = 'board-empty';
+        board.innerHTML = 'PLAYER · BANKER · TIE 버튼을 눌러 시작하세요.';
+        undoButtons.forEach(btn => btn.disabled = true);
+        resetButtons.forEach(btn => btn.disabled = true);
+        resetButtons.forEach(btn => btn.textContent = '전체 초기화');
         return;
       }
 
-      history.forEach((value, index) => {
-        const item = document.createElement('div');
-        item.className = 'round';
-        item.innerHTML = `<div class="round-num">${index + 1}</div><div class="ball ${value}">${value}</div>`;
-        road.appendChild(item);
-      });
+      undoButtons.forEach(btn => btn.disabled = false);
+      resetButtons.forEach(btn => btn.disabled = false);
 
-      const last = history.at(-1);
-      lastResult.textContent = `${history.length}R · ${names[last]}`;
-      dockLast.textContent = `최근: ${names[last]}`;
+      const cellSize = window.innerWidth <= 620 ? 36 : 44;
+      const maxCol = Math.max(...cells.map(c => c.col));
+      const minColumns = window.innerWidth <= 620 ? 10 : 14;
+      const columns = Math.max(minColumns, maxCol + 3);
+
+      board.className = 'board';
+      board.innerHTML = '';
+      board.style.gridTemplateColumns = `repeat(${columns}, ${cellSize}px)`;
+
+      for (let row = 0; row < 6; row++) {
+        for (let col = 0; col < columns; col++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.style.gridRow = String(row + 1);
+          cell.style.gridColumn = String(col + 1);
+
+          const bead = cells.find(c => c.row === row && c.col === col);
+          if (bead) {
+            const chip = document.createElement('div');
+            chip.className = `chip ${bead.result}`;
+            if (bead.result !== 'T') {
+              if (bead.ties === 1) chip.classList.add('tie-mark');
+              if (bead.ties >= 2) chip.classList.add('tie-double');
+            }
+            if (bead.ties > 2) {
+              const badge = document.createElement('div');
+              badge.className = 'tie-badge';
+              badge.textContent = bead.ties;
+              chip.appendChild(badge);
+            }
+            chip.title = `${names[bead.result]}${bead.ties ? ` · TIE ${bead.ties}회` : ''}`;
+            cell.appendChild(chip);
+          }
+          board.appendChild(cell);
+        }
+      }
     }
 
     function addResult(value) {
       if (!names[value]) return;
       history.push(value);
-      render();
+      renderBoard();
       requestAnimationFrame(() => {
-        const lastRow = road.lastElementChild;
-        if (lastRow) lastRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        boardWrap.scrollTo({ left: boardWrap.scrollWidth, behavior: 'smooth' });
       });
+    }
+
+    let resetArmed = false;
+    let resetTimer = null;
+
+    function armResetVisual(text) {
+      resetButtons.forEach(btn => btn.textContent = text);
+    }
+
+    function handleReset() {
+      if (!history.length) return;
+      if (!resetArmed) {
+        resetArmed = true;
+        armResetVisual('한 번 더 누르면 초기화');
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+          resetArmed = false;
+          armResetVisual('전체 초기화');
+        }, 2500);
+        return;
+      }
+      clearTimeout(resetTimer);
+      history.splice(0, history.length);
+      resetArmed = false;
+      armResetVisual('전체 초기화');
+      renderBoard();
+      boardWrap.scrollTo({ left: 0, behavior: 'smooth' });
     }
 
     document.querySelectorAll('[data-result]').forEach(btn => {
       btn.addEventListener('click', () => addResult(btn.dataset.result));
     });
 
-    document.getElementById('undo').addEventListener('click', () => {
+    undoButtons.forEach(btn => btn.addEventListener('click', () => {
       if (!history.length) return;
       history.pop();
-      render();
-    });
-
-    const resetBtn = document.getElementById('reset');
-    let resetArmed = false;
-    let resetTimer = null;
-
-    resetBtn.addEventListener('click', () => {
-      if (!history.length) {
-        resetArmed = false;
-        resetBtn.textContent = '전체 초기화';
-        return;
-      }
-
-      if (!resetArmed) {
-        resetArmed = true;
-        resetBtn.textContent = '한 번 더 누르면 초기화';
-        clearTimeout(resetTimer);
-        resetTimer = setTimeout(() => {
-          resetArmed = false;
-          resetBtn.textContent = '전체 초기화';
-        }, 3000);
-        return;
-      }
-
-      clearTimeout(resetTimer);
-      history.splice(0, history.length);
       resetArmed = false;
-      resetBtn.textContent = '전체 초기화';
-      render();
+      clearTimeout(resetTimer);
+      armResetVisual('전체 초기화');
+      renderBoard();
+    }));
+
+    resetButtons.forEach(btn => btn.addEventListener('click', handleReset));
+
+    document.getElementById('scrollLeftTop').addEventListener('click', () => {
+      boardWrap.scrollTo({ left: 0, behavior: 'smooth' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    render();
+    window.addEventListener('resize', renderBoard);
+
+    renderBoard();
   </script>
 </body>
 </html>
